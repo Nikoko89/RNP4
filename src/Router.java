@@ -75,7 +75,7 @@ public class Router {
     }
 
     private void sendPackage(IpPacket ipPacket, RoutePayload route) {
-        ipPacket.setHopLimit(ipPacket.getHopLimit() -1);
+        ipPacket.setHopLimit(ipPacket.getHopLimit() - 1);
         ipPacket.setNextHopIp(route.getHopAdress());
         ipPacket.setNextPort(route.getHopPort());
         try {
@@ -115,5 +115,15 @@ public class Router {
             }
         }
         return bestRoute;
+    }
+
+    public static void main(String[] args) {
+        int networkLayerPort = Integer.parseInt(args[0]);
+        String routesFilePath = args[1];
+        String routerAddress = args[2];
+        Router router = new Router(networkLayerPort, routesFilePath, routerAddress);
+
+        router.sendAndReceive();
+
     }
 }
