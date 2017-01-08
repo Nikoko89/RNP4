@@ -74,9 +74,6 @@ public class Router {
 
     }
 
-    private void sendErrorPackage(IpPacket ipPacket, ControlPacket.Type type) {
-    }
-
     private void sendPackage(IpPacket ipPacket, RoutePayload route) {
         ipPacket.setHopLimit(ipPacket.getHopLimit() -1);
         ipPacket.setNextHopIp(route.getHopAdress());
@@ -85,6 +82,25 @@ public class Router {
             networkLayer.sendPacket(ipPacket);
         } catch (IOException e) {
             System.err.println("Could not send package");
+        }
+    }
+
+    private void sendErrorPackage(IpPacket ipPacket, ControlPacket.Type type) {
+        System.out.println("Sending Error return Package of type " + type);
+
+        if (!(ipPacket.getType() == IpPacket.Header.Control || ipPacket.getSourceAddress() == null)) {
+            RoutePayload bestRoute = getBestRoute(ipPacket.getSourceAddress());
+            ipPacket.setDestinationAddress(ipPacket.getSourceAddress());
+            ipPacket.setNextHopIp(bestRoute.getHopAdress());
+            ipPacket.setNextPort(bestRoute.getHopPort());
+            ipPacket.setHopLimit(255);
+            ControlPacket controlPacket = new ControlPacket(type, ipPacket.getBytes());
+            ipPacket.setControlPayload(controlPacket.getBytes());
+            try {
+                networkLayer.sendPacket(ipPacket);
+            } catch (IOException e) {
+                System.err.println("Could not send control package");
+            }
         }
     }
 
