@@ -5,34 +5,26 @@ import java.net.Inet6Address;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Router {
     private NetworkLayer networkLayer;
-    private Inet6Address routerAddress;
     private List<RoutePayload> routingList;
 
-    public Router(int port, String routeTablePath, String address) {
+    public Router(int port, String routeTablePath) {
         try {
             networkLayer = new NetworkLayer(port);
         } catch (SocketException e) {
             System.err.println("Could not create the networklayer");
         }
-
         this.routingList = readRoutingTable(routeTablePath);
-        try {
-            this.routerAddress = (Inet6Address) Inet6Address.getByName(address);
-        } catch (UnknownHostException e) {
-            System.err.println("Could not identify host");
-        }
-
-        System.out.println(routeTablePath + " Listening on port " + port + " with local adress" + address);
+        System.out.println("Reading from file: " + routeTablePath + " Port: " + port);
     }
 
     private List<RoutePayload> readRoutingTable(String routeTablePath) {
         List<RoutePayload> routingList = new ArrayList<>();
         String route;
-
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(routeTablePath));
             while ((route = bufferedReader.readLine()) != null) {
@@ -51,18 +43,10 @@ public class Router {
             try {
                 IpPacket ipPacket = networkLayer.getPacket();
                 System.out.println("received Message: " + ipPacket);
-                //boolean reachable = routingList.stream().filter(s -> s.getTargetNetwork().contains(ipPacket.getDestinationAddress().toString())).findAny().isPresent();
-                boolean reachable = false;
-                for (RoutePayload r : routingList) {
-                    if (r.getTargetAdress().toString().contains(ipPacket.getDestinationAddress().toString())) {
-                        reachable = true;
-                    }
-                }
-
+                boolean reachable = routingList.stream().filter(s -> s.getTargetAdress().toString().contains(ipPacket.getDestinationAddress().toString())).findAny().isPresent();
                 if (reachable) {
                     Inet6Address targetAdress = ipPacket.getDestinationAddress();
-                    System.out.println(targetAdress.toString() + "hello");
-                    RoutePayload bestRoute = getBestRoute(targetAdress);
+                    RoutePayload bestRoute = routingList.stream().max(Comparator.comparing(item -> item.getBestMatch(targetAdress))).get();
 
                     if (ipPacket.getHopLimit() > 1) {
                         sendPackage(ipPacket, bestRoute);
@@ -94,9 +78,8 @@ public class Router {
 
     private void sendErrorPackage(IpPacket ipPacket, ControlPacket.Type type) {
         System.out.println("Sending Error return Package of type " + type);
-
         if (!(ipPacket.getType() == IpPacket.Header.Control || ipPacket.getSourceAddress() == null)) {
-            RoutePayload bestRoute = getBestRoute(ipPacket.getSourceAddress());
+            RoutePayload bestRoute = routingList.stream().max(Comparator.comparing(item -> item.getBestMatch(ipPacket.getSourceAddress()))).get();
             ipPacket.setDestinationAddress(ipPacket.getSourceAddress());
             ipPacket.setNextHopIp(bestRoute.getHopAdress());
             ipPacket.setNextPort(bestRoute.getHopPort());
@@ -111,26 +94,14 @@ public class Router {
         }
     }
 
-    public RoutePayload getBestRoute(Inet6Address adress) {
-        RoutePayload bestRoute = null;
-        int highestMatch = Integer.MIN_VALUE;
-        for (RoutePayload routePayload : routingList) {
-            int routeMatch = routePayload.getBestMatch(adress);
-            if (highestMatch < routeMatch) {
-                highestMatch = routeMatch;
-                bestRoute = routePayload;
-            }
-        }
-        return bestRoute;
-    }
-
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Wrong number of Parameters!!!");
+            return;
+        }
         int networkLayerPort = Integer.parseInt(args[0]);
         String routesFilePath = args[1];
-        String routerAddress = args[2];
-        Router router = new Router(networkLayerPort, routesFilePath, routerAddress);
-
+        Router router = new Router(networkLayerPort, routesFilePath);
         router.sendAndReceive();
-
     }
 }

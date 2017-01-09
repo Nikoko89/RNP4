@@ -16,6 +16,7 @@ public class RoutePayload {
 
 
     public Inet6Address getTargetAdress() {
+
         return targetAdress;
     }
 
@@ -24,17 +25,18 @@ public class RoutePayload {
     }
 
     public Inet6Address getHopAdress() {
+
         return hopAdress;
     }
 
     public int getHopPort() {
+
         return hopPort;
     }
 
 
     private Inet6Address changeToIPv6(String adress) {
         Inet6Address inet6Address = null;
-
         try {
             inet6Address = (Inet6Address) Inet6Address.getByName(adress);
         } catch (UnknownHostException e) {
@@ -43,11 +45,10 @@ public class RoutePayload {
         return inet6Address;
     }
 
-    private String changeToBinary(Inet6Address ipv6ad) {
-        String longString = ipv6ad.getHostAddress().replace(":","");
-        System.out.println(longString);
+    private String changeToBinary(Inet6Address i6addr) {
+        String longString = i6addr.getHostAddress().replace(":", "");
         String s = "";
-        for(int i = 0; i < longString.length(); i++) {
+        for (int i = 0; i < longString.length(); i++) {
             char c = longString.toCharArray()[i];
             s += String.format("%4s", Integer.toBinaryString(c)).replace(" ", "0");
         }
@@ -57,9 +58,7 @@ public class RoutePayload {
     public int getBestMatch(Inet6Address adress) {
         String target = changeToBinary(targetAdress);
         String compare = changeToBinary(adress);
-
         int counter = 0;
-
         for (int i = 0; i < target.length() && i < compare.length(); i++) {
             if (target.indexOf(i) == compare.indexOf(i)) {
                 counter++;
