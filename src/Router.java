@@ -51,10 +51,17 @@ public class Router {
             try {
                 IpPacket ipPacket = networkLayer.getPacket();
                 System.out.println("received Message: " + ipPacket);
-                boolean reachable = routingList.stream().filter(s -> s.getTargetNetwork().contains(ipPacket.getDestinationAddress().toString())).findAny().isPresent();
+                //boolean reachable = routingList.stream().filter(s -> s.getTargetNetwork().contains(ipPacket.getDestinationAddress().toString())).findAny().isPresent();
+                boolean reachable = false;
+                for (RoutePayload r : routingList) {
+                    if (r.getTargetAdress().toString().contains(ipPacket.getDestinationAddress().toString())) {
+                        reachable = true;
+                    }
+                }
 
                 if (reachable) {
                     Inet6Address targetAdress = ipPacket.getDestinationAddress();
+                    System.out.println(targetAdress.toString() + "hello");
                     RoutePayload bestRoute = getBestRoute(targetAdress);
 
                     if (ipPacket.getHopLimit() > 1) {

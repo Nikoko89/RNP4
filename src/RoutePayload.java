@@ -43,13 +43,15 @@ public class RoutePayload {
         return inet6Address;
     }
 
-    private String changeToBinary(Inet6Address adress) {
-        String[] ipv6 = adress.getHostAddress().split(":");
-        String binaryString = "";
-        for (String string : ipv6) {
-            binaryString += Integer.toBinaryString(Integer.parseInt(string));
+    private String changeToBinary(Inet6Address ipv6ad) {
+        String longString = ipv6ad.getHostAddress().replace(":","");
+        System.out.println(longString);
+        String s = "";
+        for(int i = 0; i < longString.length(); i++) {
+            char c = longString.toCharArray()[i];
+            s += String.format("%4s", Integer.toBinaryString(c)).replace(" ", "0");
         }
-        return binaryString;
+        return s;
     }
 
     public int getBestMatch(Inet6Address adress) {
