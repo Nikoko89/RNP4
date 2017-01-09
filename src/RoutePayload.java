@@ -7,33 +7,24 @@ public class RoutePayload {
     private Inet6Address hopAdress;
     private int hopPort;
 
-    public RoutePayload(String targetAdress, String hopAdress, int hopPort) {
-        this.targetAdress = changeToIPv6(targetAdress.split("/")[0]);
-        this.targetNetwork = targetAdress;
+    public RoutePayload(String targetNetwork, String hopAdress, int hopPort) {
+        this.targetAdress = changeToIPv6(targetNetwork.split("/")[0]);
+        this.targetNetwork = targetNetwork;
         this.hopAdress = changeToIPv6(hopAdress);
         this.hopPort = hopPort;
     }
 
-
     public Inet6Address getTargetAdress() {
-
         return targetAdress;
     }
 
-    public String getTargetNetwork() {
-        return targetNetwork;
-    }
-
     public Inet6Address getHopAdress() {
-
         return hopAdress;
     }
 
     public int getHopPort() {
-
         return hopPort;
     }
-
 
     private Inet6Address changeToIPv6(String adress) {
         Inet6Address inet6Address = null;
@@ -43,16 +34,6 @@ public class RoutePayload {
             System.err.println("Could not convert the given string to an IPv6 adress");
         }
         return inet6Address;
-    }
-
-    private String changeToBinary(Inet6Address i6addr) {
-        String longString = i6addr.getHostAddress().replace(":", "");
-        String s = "";
-        for (int i = 0; i < longString.length(); i++) {
-            char c = longString.toCharArray()[i];
-            s += String.format("%4s", Integer.toBinaryString(c)).replace(" ", "0");
-        }
-        return s;
     }
 
     public int getBestMatch(Inet6Address adress) {
@@ -67,5 +48,15 @@ public class RoutePayload {
             }
         }
         return counter;
+    }
+
+    private String changeToBinary(Inet6Address i6addr) {
+        String longString = i6addr.getHostAddress().replace(":", "");
+        String s = "";
+        for (int i = 0; i < longString.length(); i++) {
+            char c = longString.toCharArray()[i];
+            s += String.format("%4s", Integer.toBinaryString(c)).replace(" ", "0");
+        }
+        return s;
     }
 }

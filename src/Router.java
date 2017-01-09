@@ -53,11 +53,9 @@ public class Router {
                     } else {
                         sendErrorPackage(ipPacket, ControlPacket.Type.TimeExceeded);
                     }
-
                 } else {
                     sendErrorPackage(ipPacket, ControlPacket.Type.DestinationUnreachable);
                 }
-
             } catch (IOException e) {
                 System.err.println("Could not receive message");
             }
