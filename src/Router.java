@@ -47,7 +47,6 @@ public class Router {
                 if (reachable) {
                     Inet6Address targetAdress = ipPacket.getDestinationAddress();
                     RoutePayload bestRoute = routingList.stream().max(Comparator.comparing(item -> item.getBestMatch(targetAdress))).get();
-
                     if (ipPacket.getHopLimit() > 1) {
                         sendPackage(ipPacket, bestRoute);
                     } else {
@@ -75,7 +74,7 @@ public class Router {
     }
 
     private void sendErrorPackage(IpPacket ipPacket, ControlPacket.Type type) {
-        System.out.println("Sending Error return Package of type " + type);
+        System.out.println("Sending Error Package with type: " + type);
         if (!(ipPacket.getType() == IpPacket.Header.Control || ipPacket.getSourceAddress() == null)) {
             RoutePayload bestRoute = routingList.stream().max(Comparator.comparing(item -> item.getBestMatch(ipPacket.getSourceAddress()))).get();
             ipPacket.setDestinationAddress(ipPacket.getSourceAddress());
